@@ -56,7 +56,7 @@ def spread_page():
     # Products data dictionary with the full list of 19 products
     products = {
         "Gold (XAUUSD)": {"unit": "Ounces", "contract_size": "100 Ounces", "decimal_places": 2},
-        "Silver (XAGUSD)": {"unit": "Ounces", "contract_size": "100 Ounces", "decimal_places": 2},
+        "Silver (XAGUSD)": {"unit": "Ounces", "contract_size": "1000 Ounces", "decimal_places": 3},
         "Oil (WTI)": {"unit": "Barrels", "contract_size": "1000 Barrels", "decimal_places": 2},
         "Index (S&P 500)": {"unit": "Points", "contract_size": "$50 per point", "decimal_places": 2},
         "EUR/USD": {"unit": "Units of Base Currency", "contract_size": "100,000 Units", "decimal_places": 4},
