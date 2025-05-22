@@ -3,6 +3,10 @@ import pandas as pd
 from spread import spread_page
 from equity import equity_page
 from margin import margin_page
+from Arbitrage import arbitrage_page
+from TOO import pending_order_page
+from SST import scalping_vs_swing_trading_page
+from Pitfalls import pitfalls_page
 
 # Language switcher
 if 'language' not in st.session_state:
@@ -33,7 +37,7 @@ st.sidebar.button("Switch to 中文" if st.session_state.language == 'en' else "
 
 page_selection = st.sidebar.selectbox(
     "Select Page" if st.session_state.language == 'en' else "选择页面",
-    ["Spread", "Balance & Equity", "Margin", "Swap", "Pip vs. Point", "Types of Orders", "Scalping vs. Swing Trading", "Risk Management in Forex"]  # 页面选项
+    ["Spread", "Balance & Equity", "Margin", "Swap", "Types of Orders", "Scalping vs. Swing Trading", "Pitfalls","NOP","Short & Long position", "Arbitrage","Lot"]  
 )
 
 if page_selection == "Spread":
@@ -44,3 +48,16 @@ elif page_selection == "Equity":
 
 elif page_selection == "Margin":
     margin_page() 
+
+elif page_selection == "Arbitrage":
+    arbitrage_page()
+
+elif page_selection == "Type of Orders":
+    pending_order_page()
+
+elif page_selection == "Scalping vs. Swing Trading":
+    scalping_vs_swing_trading_page()
+
+elif page_selection == "Pitfalls":
+    pitfalls_page()
+

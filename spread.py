@@ -2,47 +2,53 @@ import streamlit as st
 import pandas as pd
 def spread_page():
     translations = {
-        "en": {
-            "title": "📊 Financial Calculation Tool",
-            "calculation_formula": "📐 Calculation Formula",
-            "spread": "🔍 Calculate Spread Cost",
-            "equity": "🔍 Calculate Equity",
-            "margin": "🔍 Calculate Margin",
-            "concept": "Concept",
-            "value": "Value",
-            "unit": "Unit",
-                "enter_bid_ask": "Enter the **Bid Price** and **Ask Price** below, then enter **Leverage** and **Trade Size**, and click 'Calculate' to see the result!",
-            "selected_product": "Selected Product: ",
-            "market_info": "📖 Click to Show Market Info for ",
-            "notes": "### 📌 Notes:\n- **Leverage** affects the spread cost, amplifying both potential profits and risks.\n- The **Spread** can vary depending on market conditions and asset volatility.",
-            "contract_size": "Contract Size",
-            "decimal_places": "Decimal Places",
-            "unit_intro": "Unit refers to the standard measurement of each trading contract.",
-            "contract_intro": "Contract Size defines the amount of the asset represented by each contract. ",
-            "decimal_intro": "Decimal Places refer to the number of decimal points used in pricing. Different products have different decimal places.",
-            "select_product": "Please select the product you want to see its unit, contract size, and decimal places:",
-        },
-        "zh": {
-            "title": "📊 财务计算工具",
-            "calculation_formula": "📐 计算公式",
-            "concept": "概念",
-            "value": "值",
-            "unit": "单位",
-            "spread": "🔍 计算点差成本",
-            "equity": "🔍 计算权益",
-            "margin": "🔍 计算保证金",
-            "enter_bid_ask": "输入 **买入价** 和 **卖出价**，然后输入 **杠杆** 和 **交易规模**，点击“计算”以查看结果！",
-            "selected_product": "选择的产品: ",
-            "market_info": "📖 点击查看市场信息: ",
-            "notes": "### 📌 注意事项:\n- **杠杆** 会影响点差成本，放大潜在利润和风险。\n- **点差** 会根据市场条件和资产波动性而变化。",
-            "contract_size": "合约大小",
-            "decimal_places": "小数点位数",
-            "unit_intro": "单位（Unit）指每个交易合约的标准计量单位。例如，在外汇交易中，1手通常等于100,000单位的基础货币。",
-            "contract_intro": "合约大小（Contract Size）定义每个合约代表的资产数量。例如，XAU/USD（黄金）的合约大小通常是100盎司。",
-            "decimal_intro": "小数点位数（DP）指价格中保留的小数位数。不同的产品有不同的小数点位数。",
-            "select_product": "请选择你想查看其单位、合约大小和小数点位数的产品：",
-        }
+    "en": {
+        "title": "📊 Financial Calculation Tool",
+        "calculation_formula": "📐 Calculation Formula",
+        "spread": "🔍 Calculate Spread Cost",
+        "equity": "🔍 Calculate Equity",
+        "margin": "🔍 Calculate Margin",
+        "concept": "Concept",
+        "value": "Value",
+        "unit": "Unit",
+        "enter_bid_ask": "Enter the **Bid Price** and **Ask Price** below, then enter **Leverage** and **Trade Size**, and click 'Calculate' to see the result!",
+        "selected_product": "Selected Product: ",
+        "market_info": "📖 Click to Show Market Info for ",
+        "notes": "### 📌 Notes:\n- **Leverage** affects the spread cost, amplifying both potential profits and risks.\n- The **Spread** can vary depending on market conditions and asset volatility.",
+        "contract_size": "Contract Size",
+        "decimal_places": "Decimal Places",
+        "unit_intro": "Unit refers to the standard measurement of each trading contract.",
+        "contract_intro": "Contract Size defines the amount of the asset represented by each contract.",
+        "decimal_intro": "Decimal Places refer to the number of decimal points used in pricing. Different products have different decimal places.",
+        "select_product": "Please select the product you want to see its unit, contract size, and decimal places:",
+        "pips_vs_points": "### 📌 Pips vs Points\n\n- **Pips** (Percentage in Points) is the smallest price movement in most **forex currency pairs**, typically **0.0001**.\n- In **JPY pairs**, a pip is defined as **0.01** (two decimal places).\n- **Points** refer to price changes in **stocks**, **commodities**, and **futures** markets, usually representing a **whole unit** price change.",
+        "spread_calculation": "### 📌 Spread Calculation Formula\n\nThe formula to calculate the spread is:\n\n$$\text{Spread} = \text{Ask Price in pips} - \text{Bid Price in pips}$$",
+        "calculation_example": "### 💡 Calculation Example\n\nFor example, if the **Bid Price** for EUR/USD is 1.2000 and the **Ask Price** is 1.2005, then:\n\n$$\text{Spread} = 1.2005 - 1.2000 = 0.0005 \quad \text{(5 pips)}$$"
+    },
+    "zh": {
+        "title": "📊 财务计算工具",
+        "calculation_formula": "📐 计算公式",
+        "concept": "概念",
+        "value": "值",
+        "unit": "单位",
+        "spread": "🔍 计算点差成本",
+        "equity": "🔍 计算权益",
+        "margin": "🔍 计算保证金",
+        "enter_bid_ask": "输入 **买入价** 和 **卖出价**，然后输入 **杠杆** 和 **交易规模**，点击“计算”以查看结果！",
+        "selected_product": "选择的产品: ",
+        "market_info": "📖 点击查看市场信息: ",
+        "notes": "### 📌 注意事项:\n- **杠杆** 会影响点差成本，放大潜在利润和风险。\n- **点差** 会根据市场条件和资产波动性而变化。",
+        "contract_size": "合约大小",
+        "decimal_places": "小数点位数",
+        "unit_intro": "单位（Unit）指每个交易合约的标准计量单位。例如，在外汇交易中，1手通常等于100,000单位的基础货币。",
+        "contract_intro": "合约大小（Contract Size）定义每个合约代表的资产数量。例如，XAU/USD（黄金）的合约大小通常是100盎司。",
+        "decimal_intro": "小数点位数（DP）指价格中保留的小数位数。不同的产品有不同的小数点位数。",
+        "select_product": "请选择你想查看其单位、合约大小和小数点位数的产品：",
+        "pips_vs_points": "### 📌 Pips 与 Points\n\n- **Pips**（Percentage in Points）是大多数 **外汇货币对** 的最小价格变动，通常为 **0.0001**。\n- 在 **JPY 货币对** 中，1个 pip 定义为 **0.01**（两位小数）。\n- **Points** 用于 **股票**、**商品** 和 **期货** 市场，通常表示 **一个整体单位** 的价格变动。",
+        "spread_calculation": "### 📌 点差计算公式\n\n计算点差的公式是：\n\n$$\text{Spread} = \text{买入价（Bid Price）以pips为单位} - \text{卖出价（Ask Price）以pips为单位}$$",
+        "calculation_example": "### 💡 计算示例\n\n例如，如果 **EUR/USD** 的 **买入价** 为 1.2000，**卖出价** 为 1.2005，则：\n\n$$\text{Spread} = 1.2005 - 1.2000 = 0.0005 \quad \text{(5 pips)}$$"
     }
+}
 
     # Set the page title based on selected language
     st.title(translations[st.session_state.language]["title"])
@@ -70,11 +76,6 @@ def spread_page():
     }
 
 
-
-    # Define available options for dropdowns
-    unit_options = ["Units"]
-    contract_size_options = ["100 Ounces", "5000 Ounces", "1000 Barrels", "1 Point", "100,000 Units", "1 Coin"]
-    decimal_places_options = [2, 4, 8]
 
     # Initialize session state variables for dropdown selections if they don't exist
     st.session_state.selected_unit = "Units"
@@ -160,19 +161,17 @@ def spread_page():
     </style>
     """, unsafe_allow_html=True)
     st.subheader(translations[st.session_state.language]["calculation_formula"])
-    st.markdown(r"""
-    The formula to calculate the spread is:
+  
+    st.markdown(translations[st.session_state.language]["pips_vs_points"])
 
-    $$\text{Spread} = \text{Ask Price} - \text{Bid Price}$$
-    """)
+    # Use st.latex for rendering the formula properly
+    st.latex(r"Spread = \text{Ask Price in pips} - \text{Bid Price in pips}")
 
-    # Show calculation example
-    st.subheader("💡 Calculation Example")
-    st.markdown(r"""
-    For example, if the **Bid Price** for EUR/USD is 1.2000 and the **Ask Price** is 1.2005, then:
+    st.markdown(translations[st.session_state.language]["calculation_example"])
+    st.latex(r"Spread = 1.2005 - 1.2000 = 0.0005 \quad \text{(5 pips)}")
 
-    $$\text{Spread} = 1.2005 - 1.2000 = 0.0005 \quad \text{(5 pips)}$$
-    """)
+
+        
 
     # "Try Calculate" button section
     st.subheader(translations[st.session_state.language]["spread"])
