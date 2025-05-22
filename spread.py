@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 def spread_page():
     translations = {
     "en": {
@@ -23,7 +24,7 @@ def spread_page():
         "select_product": "Please select the product you want to see its unit, contract size, and decimal places:",
         "pips_vs_points": "### 📌 Pips vs Points\n\n- **Pips** (Percentage in Points) is the smallest price movement in most **forex currency pairs**, typically **0.0001**.\n- In **JPY pairs**, a pip is defined as **0.01** (two decimal places).\n- **Points** refer to price changes in **stocks**, **commodities**, and **futures** markets, usually representing a **whole unit** price change.",
         "spread_calculation": "### 📌 Spread Calculation Formula\n\nThe formula to calculate the spread is:\n\n$$\text{Spread} = \text{Ask Price in pips} - \text{Bid Price in pips}$$",
-        "calculation_example": "### 💡 Calculation Example\n\nFor example, if the **Bid Price** for EUR/USD is 1.2000 and the **Ask Price** is 1.2005, then:\n\n$$\text{Spread} = 1.2005 - 1.2000 = 0.0005 \quad \text{(5 pips)}$$"
+        "calculation_example": "### 💡 Calculation Example\n\nFor example, if the **Bid Price** for EUR/USD is 1.2000 and the **Ask Price** is 1.2005, then:"
     },
     "zh": {
         "title": "📊 财务计算工具",
@@ -46,7 +47,7 @@ def spread_page():
         "select_product": "请选择你想查看其单位、合约大小和小数点位数的产品：",
         "pips_vs_points": "### 📌 Pips 与 Points\n\n- **Pips**（Percentage in Points）是大多数 **外汇货币对** 的最小价格变动，通常为 **0.0001**。\n- 在 **JPY 货币对** 中，1个 pip 定义为 **0.01**（两位小数）。\n- **Points** 用于 **股票**、**商品** 和 **期货** 市场，通常表示 **一个整体单位** 的价格变动。",
         "spread_calculation": "### 📌 点差计算公式\n\n计算点差的公式是：\n\n$$\text{Spread} = \text{买入价（Bid Price）以pips为单位} - \text{卖出价（Ask Price）以pips为单位}$$",
-        "calculation_example": "### 💡 计算示例\n\n例如，如果 **EUR/USD** 的 **买入价** 为 1.2000，**卖出价** 为 1.2005，则：\n\n$$\text{Spread} = 1.2005 - 1.2000 = 0.0005 \quad \text{(5 pips)}$$"
+        "calculation_example": "### 💡 计算示例\n\n例如，如果 **EUR/USD** 的 **买入价** 为 1.2000，**卖出价** 为 1.2005，则："
     }
 }
 
@@ -160,29 +161,6 @@ def spread_page():
         }
     </style>
     """, unsafe_allow_html=True)
-    st.subheader(translations[st.session_state.language]["calculation_formula"])
-  
-    st.markdown(translations[st.session_state.language]["pips_vs_points"])
-
-    # Use st.latex for rendering the formula properly
-    st.latex(r"Spread = \text{Ask Price in pips} - \text{Bid Price in pips}")
-
-    st.markdown(translations[st.session_state.language]["calculation_example"])
-    st.latex(r"Spread = 1.2005 - 1.2000 = 0.0005 \quad \text{(5 pips)}")
-
-
-        
-
-    # "Try Calculate" button section
-    st.subheader(translations[st.session_state.language]["spread"])
-    st.write(translations[st.session_state.language]["enter_bid_ask"])
-
-    # Sidebar content: Choose the calculation type (Spread, Equity, Margin)
-    
-
-
-
-
     market_info = ""
 
     # Set unit based on selected product and add technical details
@@ -264,118 +242,277 @@ def spread_page():
     # Display market info in an expandable section
     with st.expander(f"{translations[st.session_state.language]['market_info']} {product_selection}"):
         st.write(f"### 📈 {market_info}")
-
-    # User input fields with styling
-    col1, col2 = st.columns(2)
-
-    unit = products[product_selection]["unit"]
-    contract_size = products[product_selection]["contract_size"]
-    decimal_places = products[product_selection]["decimal_places"]
-
-
-    # 检查用户输入的价格是否符合 decimal_places
-    def check_decimal_places(value, decimal_places):
-        # 如果输入的价格的实际小数位数不符合要求，返回 False
-        if len(str(value).split('.')[-1]) > decimal_places:
-            return False
-        return True
-
-    # 用于存储是否需要显示警告的状态
-    show_warning_bid = False
-    show_warning_ask = False
-
-    with col1:
-        bid_price = st.number_input(
-            f"Enter **Bid Price** for {product_selection}:" if st.session_state.language == 'en' else f"输入 **买入价** ({product_selection}):",
-            min_value=0.0,
-            format=f"%.{decimal_places}f",
-            step=10**(-decimal_places),  # 动态步长
-            key=f"bid_price_{product_selection}"  # 确保唯一的 key
-        )
-        # 检查输入的小数位数是否符合要求
-        if not check_decimal_places(bid_price, decimal_places):
-            show_warning_bid = True
-        else:
-            show_warning_bid = False
-
-        if show_warning_bid:
-            st.warning(f"**Warning:** Bid Price for {product_selection} should have {decimal_places} decimal places.")  # 显示警告消息
-
-    with col2:
-        ask_price = st.number_input(
-            f"Enter **Ask Price** for {product_selection}:" if st.session_state.language == 'en' else f"输入 **卖出价** ({product_selection}):",
-            min_value=0.0,
-            format=f"%.{decimal_places}f",
-            step=10**(-decimal_places),  # 动态步长
-            key=f"ask_price_{product_selection}"  # 确保唯一的 key
-        )
-        # 检查输入的小数位数是否符合要求
-        if not check_decimal_places(ask_price, decimal_places):
-            show_warning_ask = True
-        else:
-            show_warning_ask = False
-
-        if show_warning_ask:
-            st.warning(f"**Warning:** Ask Price for {product_selection} should have {decimal_places} decimal places.")  # 显示警告消息
-
-
-    # Input for leverage and trade size
-    leverage = st.number_input("Enter **Leverage**:" if st.session_state.language == 'en' else "输入 **杠杆**:", min_value=1.0, step=1.0)
-    unit = products[product_selection]["unit"]
-    contract_size = products[product_selection]["contract_size"]
-    decimal_places = products[product_selection]["decimal_places"]
-
-    # 根据产品动态设置 Trade Size 输入框
-    trade_size_label = f"Enter **Trade Size** (e.g., in {unit}):" if st.session_state.language == 'en' else f"输入 **交易规模** (例如，{unit}):"
-
-    # 在col1中创建交易规模的输入框
-    trade_size = st.number_input(
-        trade_size_label,
-        min_value=0.0,
-        step=10**(-decimal_places),  # 动态调整步长，基于产品的小数位数
-        format=f"%.{decimal_places}f",  # 动态调整显示格式
-        key=f"trade_size_{product_selection}"  # 确保唯一的key
-    )
-
-    # Calculate based on selected calculation type
-
-
-    st.subheader("📊 Spread Calculation")
-    # 点差计算逻辑
-    if st.button("🔄 Calculate Spread" if st.session_state.language == 'en' else "🔄 计算点差"):
-        if bid_price > 0 and ask_price > 0 and trade_size > 0:
-            spread = ask_price - bid_price
-            st.markdown(f"### 📊 The Spread: **{spread:.4f}** (or **{spread * 10000:.0f} {unit}**)" if st.session_state.language == 'en' else f"### 📊 点差: **{spread:.4f}** (或 **{spread * 10000:.0f} {unit}**)")
-
-            cost = spread * trade_size / leverage
-            st.markdown(f"### 💰 The cost of the spread is: **{cost:.4f}** (based on leverage and trade size)" if st.session_state.language == 'en' else f"### 💰 点差成本为: **{cost:.4f}** (根据杠杆和交易规模计算)")
-        else:
-            st.warning("Please enter valid values for **Bid Price**, **Ask Price**, **Leverage**, and **Trade Size**." if st.session_state.language == 'en' else "请输入有效的 **买入价**、**卖出价**、**杠杆** 和 **交易规模**。")
-
-
+    st.subheader(translations[st.session_state.language]["calculation_formula"])
+ 
   
+    st.markdown(translations[st.session_state.language]["pips_vs_points"])
 
-    # Display additional notes
-    st.markdown(translations[st.session_state.language]["notes"])
+    # Use st.latex for rendering the formula properly
+    st.latex(r"Spread = \text{Ask Price in pips} - \text{Bid Price in pips}")
 
-    if st.button("Export Results to CSV" if st.session_state.language == 'en' else "导出结果为CSV"):
+    st.markdown(translations[st.session_state.language]["calculation_example"])
+    st.latex(r"Spread = 1.2005 - 1.2000 = 0.0005 \quad \text{(5 pips)}")
+
+
+        
+
+    # "Try Calculate" button section
+    st.subheader(translations[st.session_state.language]["spread"])
+    selected_products = st.multiselect(
+    "🔍 Select multiple products to compare:",
+    list(products.keys())
+
     
-        result = {
-            "Product": product_selection,
-            "Bid Price": bid_price,
-            "Ask Price": ask_price,
-            "Leverage": leverage,
-            "Trade Size": trade_size,
-            "Spread": spread if 'spread' in locals() else None,
-            "Cost": cost if 'cost' in locals() else None
-        }
-        
-        df = pd.DataFrame([result])
+) 
+    if len(selected_products) >= 2:
+
+        with st.expander("⚙️ Click here to input parameters for selected products", expanded=True):
+            product_inputs = {}
+
+            for product in selected_products:
+                st.markdown(f"### 🎯 **{product}**")
+                decimal_places = products[product]["decimal_places"]
+                unit = products[product]["unit"]
+
+                # 调整后的更佳列宽比例
+                cols = st.columns([1, 1, 1, 1])
+                def check_decimal_places(value, decimal_places):
+                    # 如果输入的价格的实际小数位数不符合要求，返回 False
+                    if len(str(value).split('.')[-1]) > decimal_places:
+                        return False
+                    return True
+
+                with cols[0]:
+                    bid_price = st.number_input(
+                        f"{product} - Bid Price",
+                        min_value=0.0,
+                        format=f"%.{decimal_places}f",
+                        step=10 ** (-decimal_places),
+                        key=f"bid_{product}"
+                    )
+                    if not check_decimal_places(bid_price, decimal_places):
+                        show_warning_bid = True
+                    else:
+                        show_warning_bid = False
+
+                    if show_warning_bid:
+                        st.warning(f"**Warning:** Bid Price for {product_selection} should have {decimal_places} decimal places.")  # 显示警告消息
+                with cols[1]:
+                    ask_price = st.number_input(
+                        f"{product} - Ask Price",
+                        min_value=0.0,
+                        format=f"%.{decimal_places}f",
+                        step=10 ** (-decimal_places),
+                        key=f"ask_{product}"
+                    )
+                with cols[2]:
+                    leverage = st.number_input(
+                        f" Leverage",
+                        min_value=1.0,
+                        step=1.0,
+                        value=1.0,
+                        key=f"leverage_{product}"
+                    )
+                with cols[3]:
+                    trade_size = st.number_input(
+                        f"Trade Size ({unit})",
+                        min_value=0.0,
+                        step=10 ** (-decimal_places),
+                        format=f"%.{decimal_places}f",
+                        key=f"size_{product}"
+                    )
+
+                product_inputs[product] = {
+                    "Bid Price": bid_price,
+                    "Ask Price": ask_price,
+                    "Leverage": leverage,
+                    "Trade Size": trade_size,
+                    "Decimal Places": decimal_places,
+                    "Unit": unit
+                }
+
+            if st.button("🔄 Calculate & Compare"):
+                results = []
+                for product, params in product_inputs.items():
+                    bid = params["Bid Price"]
+                    ask = params["Ask Price"]
+                    lev = params["Leverage"]
+                    size = params["Trade Size"]
+                    spread = ask - bid
+                    cost = spread * size / lev
+
+                    results.append({
+                        "Product": product,
+                        "Bid Price": bid,
+                        "Ask Price": ask,
+                        "Spread": spread,
+                        "Leverage": lev,
+                        "Trade Size": size,
+                        "Spread Cost": cost,
+                        "Decimal Places": params["Decimal Places"]  # 新增用于动态格式化
+                    })
+
+                df_results = pd.DataFrame(results)
+
+                # 动态格式化展示表格
+                styled_df = df_results.style.format({
+                    "Bid Price": lambda x, dp=df_results: f"{x:.{dp.loc[dp['Bid Price']==x, 'Decimal Places'].iloc[0]}f}",
+                    "Ask Price": lambda x, dp=df_results: f"{x:.{dp.loc[dp['Ask Price']==x, 'Decimal Places'].iloc[0]}f}",
+                    "Spread": lambda x, dp=df_results: f"{x:.{dp.loc[dp['Spread']==x, 'Decimal Places'].iloc[0]}f}",
+                    "Spread Cost": "{:.4f}",
+                    "Trade Size": lambda x, dp=df_results: f"{x:.{dp.loc[dp['Trade Size']==x, 'Decimal Places'].iloc[0]}f}",
+                    "Leverage": "{:.2f}"
+                })
+
+                st.markdown("### 📋 Comparison Results")
+                st.dataframe(styled_df)
+
+                # Fancy可视化展示Spread Cost对比
+                fig, ax = plt.subplots(figsize=(10, 5))
+                bars = ax.bar(df_results["Product"], df_results["Spread Cost"], color='skyblue')
+
+                ax.set_xlabel("Product")
+                ax.set_ylabel("Spread Cost")
+                ax.set_title("📊 Spread Cost Comparison")
+                ax.grid(axis='y', linestyle='--', alpha=0.7)
+
+                for bar in bars:
+                    yval = bar.get_height()
+                    ax.text(bar.get_x() + bar.get_width()/2, yval, f'{yval:.4f}', va='bottom', ha='center', fontsize=10, fontweight='bold')
+
+                st.pyplot(fig)
+
+                # CSV导出功能（去掉Decimal Places列）
+                csv = df_results.drop(columns=["Decimal Places"]).to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label="📥 Download Results CSV",
+                    data=csv,
+                    file_name="multi_products_results.csv",
+                    mime="text/csv"
+                )
+
+    else:
+        # st.info("ℹ️ Select at least **2 products** to trigger the comparison form.")
+        st.write(translations[st.session_state.language]["enter_bid_ask"])
+
         
 
-        st.download_button(
-            label="Download CSV" if st.session_state.language == 'en' else "下载CSV",
-            data=df.to_csv(index=False).encode('utf-8'),
-            file_name="calculation_results.csv",
-            mime="text/csv"
+
+
+
+
+
+        # User input fields with styling
+        col1, col2 = st.columns(2)
+
+        unit = products[product_selection]["unit"]
+        contract_size = products[product_selection]["contract_size"]
+        decimal_places = products[product_selection]["decimal_places"]
+
+
+        # 检查用户输入的价格是否符合 decimal_places
+        def check_decimal_places(value, decimal_places):
+            # 如果输入的价格的实际小数位数不符合要求，返回 False
+            if len(str(value).split('.')[-1]) > decimal_places:
+                return False
+            return True
+
+        # 用于存储是否需要显示警告的状态
+        show_warning_bid = False
+        show_warning_ask = False
+
+        with col1:
+            bid_price = st.number_input(
+                f"Enter **Bid Price** for {product_selection}:" if st.session_state.language == 'en' else f"输入 **买入价** ({product_selection}):",
+                min_value=0.0,
+                format=f"%.{decimal_places}f",
+                step=10**(-decimal_places),  # 动态步长
+                key=f"bid_price_{product_selection}"  # 确保唯一的 key
+            )
+            # 检查输入的小数位数是否符合要求
+            if not check_decimal_places(bid_price, decimal_places):
+                show_warning_bid = True
+            else:
+                show_warning_bid = False
+
+            if show_warning_bid:
+                st.warning(f"**Warning:** Bid Price for {product_selection} should have {decimal_places} decimal places.")  # 显示警告消息
+
+        with col2:
+            ask_price = st.number_input(
+                f"Enter **Ask Price** for {product_selection}:" if st.session_state.language == 'en' else f"输入 **卖出价** ({product_selection}):",
+                min_value=0.0,
+                format=f"%.{decimal_places}f",
+                step=10**(-decimal_places),  # 动态步长
+                key=f"ask_price_{product_selection}"  # 确保唯一的 key
+            )
+            # 检查输入的小数位数是否符合要求
+            if not check_decimal_places(ask_price, decimal_places):
+                show_warning_ask = True
+            else:
+                show_warning_ask = False
+
+            if show_warning_ask:
+                st.warning(f"**Warning:** Ask Price for {product_selection} should have {decimal_places} decimal places.")  # 显示警告消息
+
+
+        # Input for leverage and trade size
+        leverage = st.number_input("Enter **Leverage**:" if st.session_state.language == 'en' else "输入 **杠杆**:", min_value=1.0, step=1.0)
+        unit = products[product_selection]["unit"]
+        contract_size = products[product_selection]["contract_size"]
+        decimal_places = products[product_selection]["decimal_places"]
+
+        # 根据产品动态设置 Trade Size 输入框
+        trade_size_label = f"Enter **Trade Size** (e.g., in {unit}):" if st.session_state.language == 'en' else f"输入 **交易规模** (例如，{unit}):"
+
+        # 在col1中创建交易规模的输入框
+        trade_size = st.number_input(
+            trade_size_label,
+            min_value=0.0,
+            step=10**(-decimal_places),  # 动态调整步长，基于产品的小数位数
+            format=f"%.{decimal_places}f",  # 动态调整显示格式
+            key=f"trade_size_{product_selection}"  # 确保唯一的key
         )
+
+        # Calculate based on selected calculation type
+
+
+        st.subheader("📊 Spread Calculation")
+        # 点差计算逻辑
+        if st.button("🔄 Calculate Spread" if st.session_state.language == 'en' else "🔄 计算点差"):
+            if bid_price > 0 and ask_price > 0 and trade_size > 0:
+                spread = ask_price - bid_price
+                st.markdown(f"### 📊 The Spread: **{spread:.4f}** (or **{spread * 10000:.0f} {unit}**)" if st.session_state.language == 'en' else f"### 📊 点差: **{spread:.4f}** (或 **{spread * 10000:.0f} {unit}**)")
+
+                cost = spread * trade_size / leverage
+                st.markdown(f"### 💰 The cost of the spread is: **{cost:.4f}** (based on leverage and trade size)" if st.session_state.language == 'en' else f"### 💰 点差成本为: **{cost:.4f}** (根据杠杆和交易规模计算)")
+            else:
+                st.warning("Please enter valid values for **Bid Price**, **Ask Price**, **Leverage**, and **Trade Size**." if st.session_state.language == 'en' else "请输入有效的 **买入价**、**卖出价**、**杠杆** 和 **交易规模**。")
+
+
+    
+
+        # Display additional notes
+        st.markdown(translations[st.session_state.language]["notes"])
+
+        if st.button("Export Results to CSV" if st.session_state.language == 'en' else "导出结果为CSV"):
+        
+            result = {
+                "Product": product_selection,
+                "Bid Price": bid_price,
+                "Ask Price": ask_price,
+                "Leverage": leverage,
+                "Trade Size": trade_size,
+                "Spread": spread if 'spread' in locals() else None,
+                "Cost": cost if 'cost' in locals() else None
+            }
+            
+            df = pd.DataFrame([result])
+            
+
+            st.download_button(
+                label="Download CSV" if st.session_state.language == 'en' else "下载CSV",
+                data=df.to_csv(index=False).encode('utf-8'),
+                file_name="calculation_results.csv",
+                mime="text/csv"
+            )
