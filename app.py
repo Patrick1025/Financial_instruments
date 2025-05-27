@@ -7,6 +7,9 @@ from Arbitrage import arbitrage_page
 from TOO import pending_order_page
 from SST import scalping_vs_swing_trading_page
 from Pitfalls import pitfalls_page
+from lot import lot_page
+from NOP import nop_page
+from SL import long_short_page
 
 # Language switcher
 if 'language' not in st.session_state:
@@ -37,13 +40,13 @@ st.sidebar.button("Switch to 中文" if st.session_state.language == 'en' else "
 
 page_selection = st.sidebar.selectbox(
     "Select Page" if st.session_state.language == 'en' else "选择页面",
-    ["Spread", "Balance & Equity", "Margin", "Swap", "Types of Orders", "Scalping vs. Swing Trading", "Pitfalls","NOP","Short & Long position", "Arbitrage","Lot"]  
+    ["Spread", "Balance & Equity", "Swap", "Types of Orders", "Scalping vs. Swing Trading", "Pitfalls","NOP","Short & Long position", "Arbitrage","Lot"]  
 )
 
 if page_selection == "Spread":
     spread_page()
 
-elif page_selection == "Equity":
+elif page_selection == "Balance & Equity":
     equity_page()  
 
 elif page_selection == "Margin":
@@ -61,3 +64,10 @@ elif page_selection == "Scalping vs. Swing Trading":
 elif page_selection == "Pitfalls":
     pitfalls_page()
 
+elif page_selection == "Lot":
+    lot_page()
+elif page_selection == "NOP":
+    nop_page()
+
+elif page_selection == "Short & Long position":
+    long_short_page()
