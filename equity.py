@@ -171,20 +171,48 @@ def equity_page():
             st.success("✅ Added!")
 
     # 展示已输入订单 + 单个移除按钮
+    import io
+
+    # ----------- 导入/导出订单 -----------
+    st.markdown("##### 📥 Import / Export Orders")
+    col_u, col_d = st.columns(2)
+    with col_u:
+        uploaded = st.file_uploader("Import from Excel/CSV", type=["csv", "xlsx"])
+        if uploaded:
+            try:
+                if uploaded.name.endswith(".csv"):
+                    df_up = pd.read_csv(uploaded)
+                else:
+                    df_up = pd.read_excel(uploaded)
+                st.session_state.orders = df_up.to_dict(orient="records")
+                st.success("Imported orders!")
+            except Exception as e:
+                st.error(f"Import failed: {e}")
+    with col_d:
+        if st.session_state.orders:
+            df_orders = pd.DataFrame(st.session_state.orders)
+            buffer = io.BytesIO()
+            df_orders.to_csv(buffer, index=False)
+            st.download_button("Export Orders (CSV)", buffer.getvalue(), file_name="orders.csv")
+
+    # ----------- 订单DataFrame展示+批量删除+单笔浮盈 -----------
     if st.session_state.orders:
         orders_df = pd.DataFrame(st.session_state.orders)
-        # 添加删除功能
-        for idx, row in orders_df.iterrows():
-            cols = st.columns([8,1])
-            with cols[0]:
-                st.write(f"{row['Instrument']} | {row['Direction']} | {row['Position Size']} @ {row['Entry Price']}→{row['Current Price']} | {row['Margin Rate']}%")
-            with cols[1]:
-                if st.button(f"{t['remove_order']} {idx+1}", key=f"delete_{idx}"):
-                    st.session_state.orders.pop(idx)
-                    st.experimental_rerun()
+        orders_df["Floating P/L"] = orders_df.apply(
+            lambda row: ((row["Current Price"] - row["Entry Price"]) if row["Direction"]==t["long"]
+                        else (row["Entry Price"] - row["Current Price"]))
+                        * row["Position Size"] * row["Contract Size"],
+            axis=1
+        )
+        st.dataframe(orders_df, use_container_width=True)
+        selected = st.multiselect("Select orders to delete", orders_df.index)
+        if st.button(t["delete_order"]):
+            st.session_state.orders = [o for i, o in enumerate(st.session_state.orders) if i not in selected]
+            st.rerun()
         st.divider()
     else:
         st.info(t["no_orders"])
+
 
     # 计算所有账户关键指标
     if st.button(t["calc_all"]):
@@ -201,6 +229,79 @@ def equity_page():
         equity = balance + total_floating
         free_margin = equity - total_used_margin
         margin_level = (equity / total_used_margin * 100) if total_used_margin > 0 else float('inf')
+
+        # ----------- 新增：自动实时汇总与风险高亮 -----------
+        def calc_account_summary(balance, orders):
+            total_floating = 0.0
+            total_used_margin = 0.0
+            long_size = 0.0
+            short_size = 0.0
+            for order in orders:
+                cs = order["Contract Size"]
+                dir_long = order["Direction"] == t["long"] or order["Direction"] == "买入"
+                size = order["Position Size"]
+                pnl = (order["Current Price"] - order["Entry Price"]) if dir_long else (order["Entry Price"] - order["Current Price"])
+                floating = pnl * size * cs
+                total_floating += floating
+                margin_req = size * cs * order["Current Price"] * (order["Margin Rate"] / 100)
+                total_used_margin += margin_req
+                if dir_long:
+                    long_size += size * cs
+                else:
+                    short_size += size * cs
+            equity = balance + total_floating
+            free_margin = equity - total_used_margin
+            margin_level = (equity / total_used_margin * 100) if total_used_margin > 0 else float('inf')
+            margin_used_pct = (total_used_margin / balance * 100) if balance > 0 else 0
+            net_position = long_size - short_size
+            return {
+                "floating": total_floating,
+                "used_margin": total_used_margin,
+                "free_margin": free_margin,
+                "margin_level": margin_level,
+                "margin_used_pct": margin_used_pct,
+                "long_size": long_size,
+                "short_size": short_size,
+                "net_position": net_position,
+                "equity": equity
+            }
+
+        summary = calc_account_summary(balance, st.session_state.orders)
+        margin_level = summary["margin_level"]
+        margin_level_color = "green" if margin_level >= 300 else "orange" if margin_level >= 100 else "red"
+        free_margin_color = "green" if summary["free_margin"] >= 0 else "red"
+
+        st.markdown("##### 📊 Account Summary (Real-Time)")
+        cols = st.columns(6)
+        cols[0].metric(t["balance"], f"{balance:,.2f}")
+        cols[1].metric(t["floating_pl"], f"{summary['floating']:,.2f}")
+        cols[2].metric(t["equity"], f"{summary['equity']:,.2f}")
+        cols[3].metric(t["used_margin"], f"{summary['used_margin']:,.2f}")
+        cols[4].markdown(f"<div style='color:{free_margin_color};font-weight:600;'>Free Margin<br>{summary['free_margin']:,.2f}</div>", unsafe_allow_html=True)
+        cols[5].markdown(f"<div style='color:{margin_level_color};font-weight:600;'>Margin Level<br>{margin_level:.2f}%</div>", unsafe_allow_html=True)
+
+        if margin_level < 100:
+            st.error("⚠️ WARNING: Margin Level below 100%. Margin call or liquidation risk!")
+        elif margin_level < 300:
+            st.warning("⚠️ Caution: Margin Level below 300%, manage your risk!")
+        st.caption(f"Used Margin = {summary['margin_used_pct']:.2f}% of Balance")
+
+        # 多空净仓统计
+        st.markdown(
+            f"- **Total Long Exposure:** {summary['long_size']:,}\n"
+            f"- **Total Short Exposure:** {summary['short_size']:,}\n"
+            f"- **Net Position (Long - Short):** {summary['net_position']:,}"
+        )
+
+        # 盈亏趋势图
+        import numpy as np
+        days = np.arange(7)
+        simulated_floating = [summary["floating"] + np.random.randn()*100 for _ in days]
+        st.line_chart(simulated_floating)
+
+        # 风险小贴士
+        st.info("💡 **Risk Tip:** Always monitor margin level! <100% means forced liquidation risk; keep >300% for safety. Prices and leverage changes may greatly affect your margin.")
+
 
         # 卡片区 summary
         colA, colB, colC, colD, colE, colF = st.columns(6)

@@ -98,7 +98,7 @@ def long_short_page():
     # 新持仓录入
     st.header("➕ " + t["add_position"])
     with st.form("add_pos_form"):
-        cols = st.columns([2, 1.5, 1.2, 1.3, 1.3, 1.2])
+        cols = st.columns([1.5, 2, 1.2, 1.3, 1.3, 1.2])
         with cols[0]:
             instrument = st.selectbox(
                 t["instrument"], list(product_presets.keys()), key="ls_instrument"
